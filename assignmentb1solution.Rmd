@@ -1,0 +1,147 @@
+---
+title: "assignmentb1"
+author: "Xiaoxi"
+date: "2025-10-29"
+output: html_document
+encoding: "UTF-8"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Exercise 1 & 2: Make a Function with Documentation
+
+Here is the definition for the `standardize_vector` function, including the required roxygen2 documentation for Exercises 1 and 2.
+```{r}
+library(testthat)
+```
+
+```{r}
+#' @title Standardize a Numeric Vector (Calculate Z-Scores)
+#' 
+#' @description This function performs Z-score normalization: it transforms a numeric vector. so that its mean is 0 and its standard deviation (SD) is 1. The calculation of the mean and SD automatically excludes NA values, but the position of NAs in the final output is preserved.
+#' 
+#' @param x The primary numeric vector to be standardized. I chose 'x' because it's the standard convention for input vectors in base R functions like mean() and sd(). It makes the function look consistent and easier to read.
+#' 
+#' @return A numeric vector of Z-scores, having the exact same length and NA positions as the input x.
+
+standardize_vector <- function(x) {
+  
+  # Check 1: Ensure the input is numeric 
+  if (!is.numeric(x)) {
+    stop("Input 'x' must be a numeric vector.")
+  }
+  
+  # Check 2: Handle edge case where there aren’t enough non-NA values 
+  if (sum(!is.na(x)) <= 1) {
+    warning("Insufficient non-NA values (need at least 2) for meaningful standardization. Returning original vector.")
+    return(x)
+  }
+  
+  mu <- mean(x, na.rm = TRUE)
+  sigma <- sd(x, na.rm = TRUE)
+  
+  # Check 3: Handle edge case where standard deviation is zero
+  if (isTRUE(all.equal(sigma, 0))) {
+    warning("Standard deviation is zero. All non-NA values are identical; setting Z-scores to 0.")
+    # Set all non-NA values to 0
+    result <- (x - mu)
+    result[!is.na(result)] <- 0
+    return(result)
+  }
+  
+  # Core standardization calculation
+  (x - mu) / sigma
+}
+```
+
+### Exercise 3: Inclusion of Examples (15 points)
+
+#### Example 1: Standard Calculation and Verification
+I check the function with clean data and confirm that the resulting Z-scores actually have a mean near 0 and a standard deviation near 1, which confirms the transformation worked as expected.
+```{r}
+data_normal <- c(5, 7, 3, 9, 6)
+print("Original Data:")
+print(data_normal)
+
+z_scores <- standardize_vector(data_normal)
+print("Resulting Z-scores:")
+print(z_scores)
+
+print(paste("Z-scores Mean (Expected near 0):", round(mean(z_scores), 4)))
+print(paste("Z-scores SD (Expected near 1):", round(sd(z_scores), 4)))
+```
+
+### Example 2: Testing with Missing Values (NA)
+I check how the function handles missing values. The stats should be calculated only from the non-NA values, but the NA position must be preserved in the output.
+```{r}
+data_na <- c(100, 110, NA, 90, 100, 100)
+print("Data with NA:")
+print(data_na)
+
+z_scores_na <- standardize_vector(data_na)
+print("Z-scores (NA position retained):")
+print(z_scores_na)
+```
+
+
+### Example 3: Edge Case - Constant Values
+This tests the function's robustness when all non-NA values are the same (standard deviation is zero). The function should trigger a warning and return 0 for all non-NA positions.
+
+```{r}
+data_constant <- c(5, 5, NA, 5, 5)
+print("Data where all non-NA values are constant:")
+data_constant
+standardize_vector(data_constant)
+```
+
+
+### Exercise 4: The Formal Tests (25 points)
+This section uses testthat to validate the function across diverse input cases, including edge conditions such as missing values and constant vectors.
+
+```{r}
+test_that("standardize_vector handles various inputs and edge cases correctly", {
+  
+  # --- Setup Non-Redundant Test Inputs ---
+  vec_clean <- c(1, 2, 3, 4, 5)          # 1. Vector with no NA's
+  vec_with_na <- c(10, 20, NA, 30, 40)   # 2. Vector that has NA's
+  vec_constant <- c(5, 5, 5, 5)          # 3. Zero SD data (Edge case)
+  vec_char <- c("a", "b", "c")           # 4. Vector of a different type
+  vec_empty <- numeric(0)                # 5. Vector of length 0
+  
+  
+  # --- Execution of Tests ---
+  
+  # A. Use expect_true() on clean data (Input 1): Check if the result is correct
+result_clean <- standardize_vector(vec_clean)
+expect_true(
+  isTRUE(all.equal(mean(result_clean), 0)) & isTRUE(all.equal(sd(result_clean), 1))
+)
+  
+  # B. Use expect_true() on NA data (Input 2): Check if the NA position is exactly preserved
+  result_na <- standardize_vector(vec_with_na)
+  expect_true(
+    is.na(result_na[3])
+  )
+  
+  # C. Use expect_true() to check constant data (Input 3): Check that all output values are 0
+result_constant <- standardize_vector(vec_constant)
+expect_true(
+  isTRUE(all.equal(result_constant, c(0, 0, 0, 0)))
+)
+  
+  # D. Use expect_error() on non-numeric input (Input 4): Check for the required input type error
+  expect_error(
+    standardize_vector(vec_char),
+    "Input 'x' must be a numeric vector."
+  )
+  
+  # E. Use expect_length() on empty vector (Input 5): Check that output length is 0
+result_empty <- standardize_vector(vec_empty)
+expect_length(
+  result_empty,
+  0
+)
+})
+```
