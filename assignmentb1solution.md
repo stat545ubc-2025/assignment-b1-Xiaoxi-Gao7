@@ -1,23 +1,18 @@
----
-title: "assignmentb1"
-author: "Xiaoxi"
-date: "2025-10-29"
-output: github_document
-encoding: "UTF-8"
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+assignmentb1
+================
+Xiaoxi
+2025-10-29
 
 ### Exercise 1 & 2: Make a Function with Documentation
 
-Here is the definition for the `standardize_vector` function, including the required roxygen2 documentation for Exercises 1 and 2.
-```{r}
+Here is the definition for the `standardize_vector` function, including
+the required roxygen2 documentation for Exercises 1 and 2.
+
+``` r
 library(testthat)
 ```
 
-```{r}
+``` r
 #' @title Standardize a Numeric Vector (Calculate Z-Scores)
 #' 
 #' @description This function performs Z-score normalization: it transforms a numeric vector. so that its mean is 0 and its standard deviation (SD) is 1. The calculation of the mean and SD automatically excludes NA values, but the position of NAs in the final output is preserved.
@@ -59,48 +54,116 @@ standardize_vector <- function(x) {
 ### Exercise 3: Inclusion of Examples (15 points)
 
 #### Example 1: Standard Calculation and Verification
-I check the function with clean data and confirm that the resulting Z-scores actually have a mean near 0 and a standard deviation near 1, which confirms the transformation worked as expected.
-```{r}
+
+I check the function with clean data and confirm that the resulting
+Z-scores actually have a mean near 0 and a standard deviation near 1,
+which confirms the transformation worked as expected.
+
+``` r
 data_normal <- c(5, 7, 3, 9, 6)
 print("Original Data:")
-print(data_normal)
+```
 
+    ## [1] "Original Data:"
+
+``` r
+print(data_normal)
+```
+
+    ## [1] 5 7 3 9 6
+
+``` r
 z_scores <- standardize_vector(data_normal)
 print("Resulting Z-scores:")
-print(z_scores)
+```
 
+    ## [1] "Resulting Z-scores:"
+
+``` r
+print(z_scores)
+```
+
+    ## [1] -0.4472136  0.4472136 -1.3416408  1.3416408  0.0000000
+
+``` r
 print(paste("Z-scores Mean (Expected near 0):", round(mean(z_scores), 4)))
+```
+
+    ## [1] "Z-scores Mean (Expected near 0): 0"
+
+``` r
 print(paste("Z-scores SD (Expected near 1):", round(sd(z_scores), 4)))
 ```
 
+    ## [1] "Z-scores SD (Expected near 1): 1"
+
 ### Example 2: Testing with Missing Values (NA)
-I check how the function handles missing values. The stats should be calculated only from the non-NA values, but the NA position must be preserved in the output.
-```{r}
+
+I check how the function handles missing values. The stats should be
+calculated only from the non-NA values, but the NA position must be
+preserved in the output.
+
+``` r
 data_na <- c(100, 110, NA, 90, 100, 100)
 print("Data with NA:")
-print(data_na)
+```
 
+    ## [1] "Data with NA:"
+
+``` r
+print(data_na)
+```
+
+    ## [1] 100 110  NA  90 100 100
+
+``` r
 z_scores_na <- standardize_vector(data_na)
 print("Z-scores (NA position retained):")
+```
+
+    ## [1] "Z-scores (NA position retained):"
+
+``` r
 print(z_scores_na)
 ```
 
+    ## [1]  0.000000  1.414214        NA -1.414214  0.000000  0.000000
 
 ### Example 3: Edge Case - Constant Values
-This tests the function's robustness when all non-NA values are the same (standard deviation is zero). The function should trigger a warning and return 0 for all non-NA positions.
 
-```{r}
+This tests the function’s robustness when all non-NA values are the same
+(standard deviation is zero). The function should trigger a warning and
+return 0 for all non-NA positions.
+
+``` r
 data_constant <- c(5, 5, NA, 5, 5)
 print("Data where all non-NA values are constant:")
+```
+
+    ## [1] "Data where all non-NA values are constant:"
+
+``` r
 data_constant
+```
+
+    ## [1]  5  5 NA  5  5
+
+``` r
 standardize_vector(data_constant)
 ```
 
+    ## Warning in standardize_vector(data_constant): Standard deviation is zero. All
+    ## non-NA values are identical; setting Z-scores to 0.
+
+    ## [1]  0  0 NA  0  0
 
 ### Exercise 4: The Formal Tests (25 points)
-This section uses testthat to validate the function across diverse input cases, including edge conditions such as missing values and constant vectors.
 
-```{r}
+This section uses testthat to validate the function across diverse input
+cases, including edge conditions such as missing values and constant
+vectors.
+
+``` r
 test_that("standardize_vector handles various inputs and edge cases correctly", {
   
   # --- Setup Non-Redundant Test Inputs ---
@@ -145,3 +208,15 @@ expect_length(
 )
 })
 ```
+
+    ## ── Warning: standardize_vector handles various inputs and edge cases correctly ──
+    ## Standard deviation is zero. All non-NA values are identical; setting Z-scores to 0.
+    ## Backtrace:
+    ##     ▆
+    ##  1. └─global standardize_vector(vec_constant)
+    ## 
+    ## ── Warning: standardize_vector handles various inputs and edge cases correctly ──
+    ## Insufficient non-NA values (need at least 2) for meaningful standardization. Returning original vector.
+    ## Backtrace:
+    ##     ▆
+    ##  1. └─global standardize_vector(vec_empty)
